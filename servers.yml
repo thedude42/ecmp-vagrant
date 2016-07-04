@@ -1,0 +1,45 @@
+---
+    - hosts: servers
+      remote_user: root
+      become: yes
+      become_method: sudo
+      vars:
+        debian_repo_version: node_6.x
+      tasks:
+        - name: install https apt method
+          apt: name=apt-transport-https state=present
+        - name: install ca-certs for nodesource site
+          apt: name=ca-certificates state=present
+        - name: Import the NodeSource GPG key into apt
+          apt_key:
+            url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+            state: present
+        - name: Add NodeSource deb repository
+          apt_repository:
+            repo: 'deb https://deb.nodesource.com/{{ debian_repo_version }} {{ ansible_distribution_release }} main'
+            state: present
+        - name: install node from new apt repository
+          apt: name=nodejs update_cache=yes state=latest
+        - name: enable forwarding
+          sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes
+        - name: configure anycast address
+          command: ip addr add 172.16.100.100 dev lo
+        - name: install bird BGP daemon
+          apt: name=bird state=present
+        - name: copy bird config
+          template: src=bird.conf.jinja2 dest=/etc/bird/bird.conf
+        - name: fix bird log so we can run
+          file: path=/var/log/bird.log owner=bird group=bird mode=644
+          notify:
+            - restart bird
+        - name: ensure bird started
+          service: name=bird enabled=yes state=started
+        - name: copy test app
+          template: src=app.js.jinja2 dest=/home/vagrant/app.js mode=755
+        - name: copy app unit
+          copy: src=myapp.service dest=/etc/systemd/system/myapp.service
+        - name: start testapp
+          service: name=myapp state=started
+      handlers:
+        - name: restart bird
+          service: name=bird state=restarted

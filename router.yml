@@ -1,0 +1,29 @@
+---
+    - hosts: ecmp-routers
+      remote_user: root
+      become: yes
+      become_method: sudo
+      tasks:
+        - name: install quagga
+          apt: name=quagga state=present
+        - name: ensure quagga is enabled
+          service: name=quagga enabled=yes
+        - name: copy quagga daemons config
+          copy: src=daemons dest=/etc/quagga/daemons owner=quagga group=quaggavty mode=640
+        - name: copy zebra config
+          copy: src=zebra.conf dest=/etc/quagga/zebra.conf owner=quagga group=quaggavty mode=640
+        - name: enable forwarding
+          sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes
+        - name: copy vtysh.conf
+          copy: src=vtysh.conf dest=/etc/quagga/vtysh.conf owner=quagga group=quaggavty mode=640
+        - name: copy bgpd.conf
+          copy: src=bgpd.conf dest=/etc/quagga/bgpd.conf owner=quagga group=quaggavty mode=640
+        - name: allow vagrnt vtysh
+          user: name=vagrant groups=quaggavty,quagga append=yes
+          notify:
+            - restart quagga
+        - name: ensure quagga is running
+          service: name=quagga state=started
+      handlers:
+        - name: restart quagga
+          service: name=quagga state=restarted

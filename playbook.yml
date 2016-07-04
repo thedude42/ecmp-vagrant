@@ -1,0 +1,4 @@
+---
+    - include: router.yml
+    - include: servers.yml
+    - include: client.yml

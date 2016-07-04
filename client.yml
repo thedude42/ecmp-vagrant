@@ -1,0 +1,8 @@
+---
+    - hosts: clients
+      remote_user: root
+      become: yes
+      become_method: sudo
+      tasks:
+        - name: install curl
+          apt: name=curl state=present

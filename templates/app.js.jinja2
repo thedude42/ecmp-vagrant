@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+"use strict";
+
+var Http = require("http");
+
+function responder(req, resp) {
+  console.log("responding to request");
+  resp.writeHead(200, {
+    "Content-Type": "text/plain"
+  });
+  let body = "This is node {{ node_number }}\nsocket info:";
+  body += JSON.stringify(req.socket.address())+"\n";
+  resp.end(body);
+}
+
+var server = Http.createServer(responder);
+server.listen(80, "0.0.0.0");
+console.log("listening on 80...");
