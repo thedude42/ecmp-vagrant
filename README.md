@@ -1,6 +1,9 @@
 # ecmp-vagrant
 Vagrant environment with ansible provisiong to build a test ECMP BGP environment
 
+## NOTE:
+> I'm researching Bird + exabgp as a possible way to do this in pure software on linux, or posibly a bsd variant.
+
 My goal was to set up the siplest possible BGP ECMP environment using Vagrant and Linux with whatever routing software I could get working.
 
 I settled on the following configuration:
